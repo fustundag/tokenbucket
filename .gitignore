@@ -1,0 +1,7 @@
+vagrant
+vendor
+composer.phar
+composer.lock
+.DS_Store
+log
+phpunit.xml
