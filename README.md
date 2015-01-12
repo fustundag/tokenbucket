@@ -1,4 +1,4 @@
-# TokenBucket
+# TokenBucket [![Build Status](https://travis-ci.org/fustundag/tokenbucket.svg?branch=master)](https://travis-ci.org/fustundag/tokenbucket)
 TokenBucket is an algorithm for rate limit
 
 You can check algorithm from http://en.wikipedia.org/wiki/Token_bucket
