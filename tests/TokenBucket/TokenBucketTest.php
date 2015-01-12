@@ -59,7 +59,25 @@ class TokenBucketTest extends \PHPUnit_Framework_TestCase
 
     public function testGetTtl()
     {
-        $this->assertEquals(6.0, $this->tokenBucket->getTtl(), 'GetTttl failed');
+        $this->assertEquals(6.0, $this->tokenBucket->getTtl(), 'GetTtl failed');
+    }
+
+    public function testGetTokenCount()
+    {
+        $this->tokenBucket->fill();
+        $this->assertEquals(20, $this->tokenBucket->getTokenCount(), 'GetTokenCount failed');
+    }
+
+    public function testGetResetTime()
+    {
+        $now = time();
+        $this->tokenBucket->fill();
+        sleep(1);
+        $this->assertEquals(
+            $now+$this->tokenBucket->getTtl(),
+            $this->tokenBucket->getResetTime(),
+            'GetTokenCount failed'
+        );
     }
 
     public function testSetOptions()
@@ -76,12 +94,19 @@ class TokenBucketTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(5, $this->tokenBucket->getFillRate(), 'Default fillRate option value failed');
     }
 
-    public function testFill()
+    public function testFillDefault()
+    {
+        $this->tokenBucket->fill();
+        $bucketArray = $this->tokenBucket->getBucket();
+        $this->assertEquals(20, $bucketArray['count'], 'Fill does not work');
+    }
+
+    public function testFillWithFillRate()
     {
         $this->tokenBucket->setOptions(array('capacity' => 100, 'fillRate' => 10));
         $this->storage->set(
             $this->tokenBucket->getBucketKey(),
-            array('count' => 50, 'time' => time()),
+            array('count' => 50, 'time' => time(), 'reset' => time()+15),
             $this->tokenBucket->getTtl()
         );
         sleep(1);
@@ -89,6 +114,27 @@ class TokenBucketTest extends \PHPUnit_Framework_TestCase
         $bucketArray = $this->tokenBucket->getBucket();
         $this->assertEquals(60, $bucketArray['count'], 'Fill does not work');
 
+    }
+
+    public function testFillWithoutFillRate()
+    {
+        $this->tokenBucket->setOptions(array('capacity' => 100, 'fillRate' => 0, 'ttl' => 5));
+
+        $this->tokenBucket->fill();
+        $bucketArray = $this->tokenBucket->getBucket();
+        $this->assertEquals(100, $bucketArray['count'], 'Fill without fillrate does not work');
+
+        $this->tokenBucket->consume(20);
+
+        sleep(2);
+        $this->tokenBucket->fill();
+        $bucketArray = $this->tokenBucket->getBucket();
+        $this->assertEquals(80, $bucketArray['count'], 'Fill without fillrate does not work');
+
+        sleep(4);
+        $this->tokenBucket->fill();
+        $bucketArray = $this->tokenBucket->getBucket();
+        $this->assertEquals(100, $bucketArray['count'], 'Fill without fillrate does not work');
     }
 
     public function testConsume()

@@ -93,6 +93,16 @@ class TokenBucket
         return $this->ttl;
     }
 
+    public function getTokenCount()
+    {
+        return is_array($this->bucket) && isset($this->bucket['count'])?$this->bucket['count']:0;
+    }
+
+    public function getResetTime()
+    {
+        return is_array($this->bucket) && isset($this->bucket['reset'])?$this->bucket['reset']:time();
+    }
+
     public function setOptions($options)
     {
         if (is_array($options) && count($options)>0) {
@@ -100,10 +110,12 @@ class TokenBucket
                 ?intval($options['capacity'])
                 :$this->capacity;
 
-            $this->fillRate = (isset($options['fillRate']) && floatval($options['fillRate'])>0)
+            $this->fillRate = (isset($options['fillRate']) && is_numeric($options['fillRate']))
                 ?$options['fillRate']
                 :$this->fillRate;
-            $this->ttl = ($this->capacity/$this->fillRate)*1.5;
+            $this->ttl      = (isset($options['ttl']) && intval($options['ttl'])>0)
+                ?intval($options['ttl'])
+                :($this->fillRate>0?ceil(($this->capacity/$this->fillRate)*1.5):0);
         }
     }
 
@@ -112,20 +124,22 @@ class TokenBucket
         $this->storage->set(
             $this->bucketKey,
             $this->bucket,
-            $this->ttl
+            $this->bucket['reset']
         );
     }
 
     public function fill()
     {
         $this->bucket = $this->storage->get($this->bucketKey);
+        $now = time();
+
         if (is_array($this->bucket)===false) {
             $this->bucket = array(
                 'count' => $this->capacity,
-                'time'  => time()
+                'time'  => $now,
+                'reset' => $now + $this->ttl
             );
         } else {
-            $now = time();
             if ($this->bucket['count'] < $this->capacity) {
                 $delta = $this->fillRate * ($now - $this->bucket['time']);
                 $this->bucket['count'] = min($this->capacity, ($this->bucket['count'] + $delta));

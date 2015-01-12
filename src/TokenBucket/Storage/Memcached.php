@@ -61,15 +61,13 @@ class Memcached implements StorageInterface
 
     public function set($key, $value, $ttl = 0)
     {
-        if (isset($this->casArray[ $key ])===false) {
-            $this->get($key);
-        }
+        $this->get($key);
         if (!$value) {
             throw new StorageException(
                 '[STORAGE] Given value for "'. $this->getStorageName() .'::set" not valid! Key: ' . $key
             );
         }
-        if ($this->casArray[ $key ]==0) {
+        if ($this->memcachedObj->getResultCode()==\Memcached::RES_NOTFOUND) {
             $this->memcachedObj->add($key, $value, $ttl);
             unset($this->casArray[ $key ]);
         } else {
