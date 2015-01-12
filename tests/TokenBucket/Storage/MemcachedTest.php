@@ -21,8 +21,8 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $getMap = array(
-            array("notfound", null, null, null, false),
-            array("found", null, null, null,  array('count' => 5, 'time' => strtotime('2015-01-01 00:00:00'))),
+            array("notfound", null, null, null, null, false),
+            array("found", null, null, null, null,  array('count' => 5, 'time' => strtotime('2015-01-01 00:00:00'))),
         );
         $memcachedMock = $this->getMock('\Memcached');
 

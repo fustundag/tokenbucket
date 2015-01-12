@@ -86,28 +86,32 @@ class TokenBucketTest extends \PHPUnit_Framework_TestCase
         );
         sleep(1);
         $this->tokenBucket->fill();
-        $this->assertEquals(60, $this->tokenBucket->getBucket()['count'], 'Fill does not work');
+        $bucketArray = $this->tokenBucket->getBucket();
+        $this->assertEquals(60, $bucketArray['count'], 'Fill does not work');
 
     }
 
     public function testConsume()
     {
         $this->assertTrue($this->tokenBucket->consume(), 'Consume failed');
-        $this->assertEquals(19, $this->tokenBucket->getBucket()['count'], 'Token Count after consume failed');
+        $bucketArray = $this->tokenBucket->getBucket();
+        $this->assertEquals(19, $bucketArray['count'], 'Token Count after consume failed');
         $this->assertNotEmpty($this->storage->get($this->tokenBucket->getBucketKey()), 'Key not found at storage');
         $this->assertArrayHasKey(
             'count',
             $this->storage->get($this->tokenBucket->getBucketKey()),
             '"count" index not found at storage key'
         );
+        $storageVal = $this->storage->get($this->tokenBucket->getBucketKey());
         $this->assertEquals(
             19,
-            $this->storage->get($this->tokenBucket->getBucketKey())['count'],
+            $storageVal['count'],
             'Token Count after consume failed'
         );
 
         sleep(1);
         $this->assertFalse($this->tokenBucket->consume(22), 'Not Consume failed');
-        $this->assertEquals(20, $this->tokenBucket->getBucket()['count'], 'Token Count after not consumed failed');
+        $bucketArray = $this->tokenBucket->getBucket();
+        $this->assertEquals(20, $bucketArray['count'], 'Token Count after not consumed failed');
     }
 }
