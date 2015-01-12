@@ -1,0 +1,29 @@
+{
+  "name": "fustundag/tokenbucket",
+  "description": "PHP TokenBucket implementation for rate limit",
+  "keywords": ["token", "bucket", "rate", "limit"],
+  "homepage": "http://github.com/fustundag/tokenbucket",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Fatih Ustundag",
+      "email": "fatih.ustundag@gmail.com",
+      "homepage": "http://fatihustundag.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.3.0",
+    "ext-memcached": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": ">=4.4.1",
+    "phpunit/dbunit": "1.3.1",
+    "phpunit/php-code-coverage": "2.0.*@stable",
+    "squizlabs/php_codesniffer": "2.1.*@stable",
+    "phpmd/phpmd": "2.1.*@stable"
+  },
+  "autoload": {
+    "psr-4": {"TokenBucket\\": "src/TokenBucket"}
+  }
+}
