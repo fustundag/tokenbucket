@@ -133,7 +133,7 @@ class TokenBucket
         $this->bucket = $this->storage->get($this->bucketKey);
         $now = time();
 
-        if (is_array($this->bucket)===false) {
+        if (is_array($this->bucket)===false || count($this->bucket)==0) {
             $this->bucket = array(
                 'count' => $this->capacity,
                 'time'  => $now,
@@ -161,5 +161,17 @@ class TokenBucket
         } else {
             return false;
         }
+    }
+
+    public function getRateLimitHttpHeaders()
+    {
+        if (is_array($this->bucket)===false || count($this->bucket)==0) {
+            $this->fill();
+        }
+        return array(
+            'X-RateLimit-Limit'     => $this->capacity,
+            'X-RateLimit-Remaining' => $this->bucket['count'],
+            'X-RateLimit-Reset'     => $this->bucket['reset'],
+        );
     }
 }

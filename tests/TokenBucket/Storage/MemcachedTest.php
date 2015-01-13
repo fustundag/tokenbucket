@@ -101,12 +101,13 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
     public function testSet()
     {
         $this->assertEquals(0, $this->storage->set('newkey', array(1,2,3), 0), 'Storage set failed');
+
+        sleep(1);
+        $this->assertEquals(0, $this->storage->set('newkey', 'again set', 0), 'Storage re-set failed');
+
         try {
-            $this->storage->get('newkey');
-            self::$memcached->resetServerList();
-            $this->storage->set('newkey', array(1,2,3), 0);
+            $this->storage->set('newkey', array(1,2,3), -1);
         } catch (StorageException $e) {
-            self::$memcached->addServer('127.0.0.1', 11211);
             return;
         }
         $this->fail('Storage set exception failed');

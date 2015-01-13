@@ -160,4 +160,18 @@ class TokenBucketTest extends \PHPUnit_Framework_TestCase
         $bucketArray = $this->tokenBucket->getBucket();
         $this->assertEquals(20, $bucketArray['count'], 'Token Count after not consumed failed');
     }
+
+    public function testGetRateLimitHttpHeaders()
+    {
+        $this->tokenBucket->setOptions(array('capacity' => 100, 'fillRate' => 0, 'ttl' => 5));
+        $this->assertEquals(
+            array(
+                'X-RateLimit-Limit'     => 100,
+                'X-RateLimit-Remaining' => 100,
+                'X-RateLimit-Reset'     => time()+5,
+            ),
+            $this->tokenBucket->getRateLimitHttpHeaders(),
+            'get rate-limit http headers failed'
+        );
+    }
 }
