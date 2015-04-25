@@ -124,7 +124,7 @@ class TokenBucket
         $this->storage->set(
             $this->bucketKey,
             $this->bucket,
-            $this->bucket['reset']
+            $this->ttl>1?($this->ttl-1):$this->ttl
         );
     }
 
