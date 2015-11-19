@@ -123,8 +123,7 @@ class TokenBucket
     {
         $this->storage->set(
             $this->bucketKey,
-            $this->bucket,
-            $this->ttl>1?($this->ttl-1):$this->ttl
+            $this->bucket
         );
     }
 
@@ -133,7 +132,7 @@ class TokenBucket
         $this->bucket = $this->storage->get($this->bucketKey);
         $now = time();
 
-        if (is_array($this->bucket)===false || count($this->bucket)==0) {
+        if (is_array($this->bucket)===false || count($this->bucket)==0 || $now>=$this->bucket['reset']) {
             $this->bucket = array(
                 'count' => $this->capacity,
                 'time'  => $now,

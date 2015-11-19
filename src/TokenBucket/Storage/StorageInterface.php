@@ -27,11 +27,10 @@ interface StorageInterface
      *
      * @param string $key
      * @param mixed  $value
-     * @param int    $ttl   The time to live for the value (in seconds)
      *
      * @return void
      */
-    public function set($key, $value, $ttl = 0);
+    public function set($key, $value);
 
     /**
      * Deletes an entry from storage.

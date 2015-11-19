@@ -59,7 +59,7 @@ class Memcached implements StorageInterface
         return $data;
     }
 
-    public function set($key, $value, $ttl = 0)
+    public function set($key, $value)
     {
         $this->get($key);
         if (!$value) {
@@ -68,10 +68,10 @@ class Memcached implements StorageInterface
             );
         }
         if ($this->memcachedObj->getResultCode()==\Memcached::RES_NOTFOUND) {
-            $this->memcachedObj->add($key, $value, $ttl);
+            $this->memcachedObj->add($key, $value);
             unset($this->casArray[ $key ]);
         } else {
-            $this->memcachedObj->cas($this->casArray[ $key ], $key, $value, $ttl);
+            $this->memcachedObj->cas($this->casArray[ $key ], $key, $value);
         }
         $resultCode = $this->memcachedObj->getResultCode();
         if ($resultCode != \Memcached::RES_SUCCESS) {

@@ -100,13 +100,13 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
 
     public function testSet()
     {
-        $this->assertEquals(0, $this->storage->set('newkey', array(1,2,3), 0), 'Storage set failed');
+        $this->assertEquals(0, $this->storage->set('newkey', array(1,2,3)), 'Storage set failed');
 
         sleep(1);
-        $this->assertEquals(0, $this->storage->set('newkey', 'again set', 0), 'Storage re-set failed');
+        $this->assertEquals(0, $this->storage->set('newkey', 'again set'), 'Storage re-set failed');
 
         try {
-            $this->storage->set('newkey', array(1,2,3), -1);
+            $this->storage->set('new key', array(1,2,3));
         } catch (StorageException $e) {
             return;
         }
