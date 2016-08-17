@@ -1,7 +1,7 @@
 {
   "name": "fustundag/tokenbucket",
   "description": "PHP TokenBucket implementation for rate limit",
-  "keywords": ["token", "bucket", "rate", "limit"],
+  "keywords": ["token", "bucket", "rate", "limit", "rate limit"],
   "homepage": "http://github.com/fustundag/tokenbucket",
   "type": "library",
   "license": "MIT",
