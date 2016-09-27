@@ -38,7 +38,7 @@ class Memcached implements StorageInterface
     }
 
     /**
-     * @return array
+     * @return int
      */
     public function getResultCode()
     {
