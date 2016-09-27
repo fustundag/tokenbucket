@@ -47,7 +47,8 @@ class Memcached implements StorageInterface
 
     public function get($key)
     {
-        $data       = $this->memcachedObj->get($key, null, $cas);
+        $casToken   = null;
+        $data       = $this->memcachedObj->get($key, null, $casToken);
         $resultCode = $this->memcachedObj->getResultCode();
         if ($resultCode != \Memcached::RES_SUCCESS && $resultCode != \Memcached::RES_NOTFOUND) {
             throw new StorageException(
@@ -55,7 +56,7 @@ class Memcached implements StorageInterface
                 .' StorageRespCode: ' . $resultCode
             );
         }
-        $this->casArray[ $key ] = $cas;
+        $this->casArray[ $key ] = $casToken;
         return $data;
     }
 
