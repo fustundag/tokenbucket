@@ -26,12 +26,14 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         self::$memcached = new \Memcached();
-        self::$memcached->addServer('127.0.0.1', 11211);
         self::$memcached->setOptions(array(
             \Memcached::OPT_TCP_NODELAY => true,
             \Memcached::OPT_NO_BLOCK => true,
-            \Memcached::OPT_CONNECT_TIMEOUT => 100
+            \Memcached::OPT_CONNECT_TIMEOUT => 1000
         ));
+        if (count(self::$memcached->getServerList()) == 0) {
+            self::$memcached->addServers(array(array(MEMCACHED_HOST, MEMCACHED_PORT)));
+        }
     }
 
     public static function tearDownAfterClass()
@@ -42,6 +44,7 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         self::$memcached->flush();
+        self::$memcached->quit();
         self::$memcached->set('found', array('count' => 5, 'time' => strtotime('2015-01-01 00:00:00')));
         self::$memcached->set('oldkey', 'old story');
         $this->storage = new MemcachedStorage(self::$memcached);
@@ -71,6 +74,9 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(\Memcached::RES_NOTFOUND, $this->storage->getResultCode(), 'get result code failed');
     }
 
+    /**
+     * @group deleteTestSet
+     */
     public function testGet()
     {
         $this->assertFalse($this->storage->get('notfound'), '"notfound" key test failed');
@@ -83,7 +89,9 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
             self::$memcached->resetServerList();
             $this->storage->get('notfound');
         } catch (StorageException $e) {
-            self::$memcached->addServer('127.0.0.1', 11211);
+            if (count(self::$memcached->getServerList()) == 0) {
+                self::$memcached->addServers(array(array(MEMCACHED_HOST, MEMCACHED_PORT)));
+            }
             return;
         }
         $this->fail('Storage exception failed');
@@ -98,32 +106,37 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
         $this->storage->set('newkey', false);
     }
 
+    /**
+     * @group notest
+     * @expectedException \TokenBucket\Exception\StorageException
+     * @expectedExceptionMessage [STORAGE] "Memcached::set" failed! StorageRespCode: 9, Key: new key, Cas: null
+     */
+    public function testSetInvalidKeyException()
+    {
+        $this->storage->set('new key', array(1,2,3));
+    }
+
     public function testSet()
     {
         $this->assertEquals(0, $this->storage->set('newkey', array(1,2,3)), 'Storage set failed');
 
         sleep(1);
         $this->assertEquals(0, $this->storage->set('newkey', 'again set'), 'Storage re-set failed');
-
-        try {
-            $this->storage->set('new key', array(1,2,3));
-        } catch (StorageException $e) {
-            return;
-        }
-        $this->fail('Storage set exception failed');
     }
 
     public function testDelete()
     {
         $this->storage->get('oldkey');
         $this->assertArrayHasKey('oldkey', $this->storage->getCasArray(), 'Cas array has not key "oldkey"!');
-        $this->assertEquals(0, $this->storage->delete('oldkey'));
+        $this->assertEquals(0, $this->storage->delete('oldkey'), 'Delete failed!');
         $this->assertArrayNotHasKey('oldkey', $this->storage->getCasArray(), 'Cas array has key "oldkey"!');
         try {
             self::$memcached->resetServerList();
             $this->storage->delete('oldkey');
         } catch (StorageException $e) {
-            self::$memcached->addServer('127.0.0.1', 11211);
+            if (count(self::$memcached->getServerList()) == 0) {
+                self::$memcached->addServers(array(array(MEMCACHED_HOST, MEMCACHED_PORT)));
+            }
             return;
         }
         $this->fail('Storage delete exception test failed');

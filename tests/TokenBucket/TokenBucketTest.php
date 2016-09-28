@@ -31,12 +31,14 @@ class TokenBucketTest extends \PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         self::$memcached = new \Memcached();
-        self::$memcached->addServer('127.0.0.1', 11211);
         self::$memcached->setOptions(array(
             \Memcached::OPT_TCP_NODELAY => true,
             \Memcached::OPT_NO_BLOCK => true,
-            \Memcached::OPT_CONNECT_TIMEOUT => 100
+            \Memcached::OPT_CONNECT_TIMEOUT => 1000
         ));
+        if (count(self::$memcached->getServerList()) == 0) {
+            self::$memcached->addServers(array(array(MEMCACHED_HOST, MEMCACHED_PORT)));
+        }
     }
 
     public static function tearDownAfterClass()
@@ -47,6 +49,7 @@ class TokenBucketTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         self::$memcached->flush();
+        self::$memcached->quit();
         $this->storage     = new MemcachedStorage(self::$memcached);
         $this->tokenBucket = new TokenBucket('test', $this->storage);
     }

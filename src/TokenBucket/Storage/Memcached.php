@@ -47,8 +47,20 @@ class Memcached implements StorageInterface
 
     public function get($key)
     {
-        $casToken   = null;
-        $data       = $this->memcachedObj->get($key, null, $casToken);
+        if (self::doesGetReturnCasByReference()) {
+            $casToken = null;
+            $data     = $this->memcachedObj->get($key, null, $casToken);
+        } else {
+            $data = $this->memcachedObj->get($key, null, \Memcached::GET_EXTENDED);
+            if (is_array($data)) {
+                $casToken = isset($data['cas'])?$data['cas']:null;
+                $data     = isset($data['value'])?$data['value']:false;
+            } else {
+                $casToken = null;
+                $data     = false;
+            }
+        }
+
         $resultCode = $this->memcachedObj->getResultCode();
         if ($resultCode != \Memcached::RES_SUCCESS && $resultCode != \Memcached::RES_NOTFOUND) {
             throw new StorageException(
@@ -98,5 +110,19 @@ class Memcached implements StorageInterface
         }
         unset($this->casArray[ $key ]);
         return $resultCode;
+    }
+
+    /**
+     * @return boolean Do get() and getMulti() return $token by reference,
+     * or do you have to pass Memcached::GET_EXTENDED as a bit flag in that position instead.
+     */
+    public static function doesGetReturnCasByReference()
+    {
+        static $returnsReference;
+        if ($returnsReference === null) {
+            // memcached < 3.0.0-dev (approx) returns the CAS token by reference.
+            $returnsReference = version_compare(phpversion("memcached"), '3.0.0-dev', '<');
+        }
+        return $returnsReference;
     }
 }
