@@ -109,7 +109,6 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
     /**
      * @group notest
      * @expectedException \TokenBucket\Exception\StorageException
-     * @expectedExceptionMessage [STORAGE] "Memcached::set" failed! StorageRespCode: 9, Key: new key, Cas: null
      */
     public function testSetInvalidKeyException()
     {
