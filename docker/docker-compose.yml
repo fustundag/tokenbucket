@@ -1,0 +1,27 @@
+tokenbucket:
+  image: fustundag/centos-php7
+  hostname: tokenbucket-docker
+  container_name: tokenbucket-container
+  environment:
+    APPLICATION_ENV: development
+    HISTFILE: /root/.bash_history/.bash_history
+  command: sh /init.sh
+  links:
+    - tokenbucket_memcached
+  volumes:
+    - ./config-files/pinfo.php:/pinfo.php
+    - ./config-files/init.sh:/init.sh
+    - ./config-files/nginx.conf:/etc/nginx/nginx.conf
+    - ./config-files/vhost.conf:/etc/nginx/conf.d/vhost.conf
+    - ./config-files/www.conf:/etc/php-fpm.d/www.conf
+    - ./config-files/php-development.ini:/etc/php.d/php-development.ini
+    - ./config-files/xdebug-profiler.ini:/etc/php.d/xdebug-profiler.ini
+    - ./config-files/xdebug-remote.ini:/etc/php.d/xdebug-remote.ini
+    - ./../:/data/project
+    - ./../log/nginx:/var/log/nginx
+    - ./../log/php-fpm:/var/log/php-fpm
+    - /root/.bash_history
+
+tokenbucket_memcached:
+  image: memcached
+  container_name: tokenbucket-memcached-container
